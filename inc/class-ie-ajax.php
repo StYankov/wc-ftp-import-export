@@ -23,7 +23,7 @@ class IE_Ajax {
         ini_set('display_errors', 1);
         error_reporting(E_ALL);
 
-        do_action( IE_Cron::HOOK_NAME );
+        do_action( IE_Cron::FTP_DOWNLOAD_HOOK );
         
         wp_send_json_success();
     }

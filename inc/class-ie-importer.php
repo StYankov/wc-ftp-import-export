@@ -5,11 +5,20 @@ defined( 'ABSPATH' ) or exit;
 class IE_Importer {
     private function __construct() {}
 
-    public static function import( $products_array ) {
+    public static function import( $products_array, $offset = 0, $limit = -1 ) {
         $updated = 0;
         $new     = 0;
 
-        foreach( $products_array as $product_item ) {
+        if( $limit == -1 )
+            $limit = count( $products_array );
+        else 
+            $limit = $offset + $limit;
+
+        $limit = min( $limit, count( $products_array ) );
+
+        for($i = $offset; $i < $limit; $i++) {
+            $product_item = $products_array[$i];
+
             try {
                 $result = self::import_product( $product_item );
 
@@ -23,19 +32,19 @@ class IE_Importer {
                 IE_LOG::write("Product Could Not Be Imported. Reason: " . $e->getMessage() . ' | Product Details: ' . json_encode( $product_item ), 'ERROR' );
             }
         }
-
-        IE_LOG::write("Import Successfull. New Products: $new; Updated Products: $updated");
+        
+        IE_LOG::write("Processed products from $offset to $limit. New: $new | Updated: $updated", 'success');
     }
 
     private static function import_product( $product_item ) {
         $type = 'update';
 
-        $product = self::get_product_by_origin_id( $product_item['origin_id'] );
+        $product = self::get_product_by_sku( $product_item['origin_id'] );
 
         if( is_null($product) ) {
             $type = 'new';
             $product = new WC_Product_Simple();
-            $product->set_sku( $product_item['barcode'] ); // Cannot assign SKU on update because error is thrown
+            $product->set_sku( $product_item['origin_id'] ); // Cannot assign SKU on update because error is thrown
         }
 
         $product->set_name( $product_item['title'] );
@@ -47,7 +56,7 @@ class IE_Importer {
         $product->set_stock_status( $product_item['in_stock'] ? 'instock' : 'outofstock' );
         $product->set_regular_price( $product_item['price'] );
 
-        $product->update_meta_data( '_origin_id', $product_item['origin_id'] );
+        $product->update_meta_data( '_barcode', $product_item['barcode'] );
         $product->update_meta_data( '_is_new', $product_item['is_new'] ? 'yes' : 'no' );
 
         $vol_attribute = new WC_Product_Attribute();
@@ -66,23 +75,8 @@ class IE_Importer {
         return $type;
     }
 
-    /**
-     * Search product by original id (old id)
-     * 
-     * @return \WC_Product|null
-     */
-    private static function get_product_by_origin_id( $origin_id ) {
-        global $wpdb;
-
-        $product_id = $wpdb->get_var(
-            $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_origin_id' AND meta_value = %s", $origin_id )
-        );
-
-        $wpdb->flush();
-
-        if( ! $product_id )
-            return null;
-
-        return wc_get_product( $product_id );
+    private static function get_product_by_sku($sku) {
+        $product_id = wc_get_product_id_by_sku( $sku );
+        return $product_id ? wc_get_product( $product_id ) : null;
     }
 }

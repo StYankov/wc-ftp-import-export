@@ -6,7 +6,7 @@
 
     <?php submit_button(); ?>
 </form>
-<p>Next Cron Schedule: <?= IE_Cron::get_next_scheduled() ?></p>
+<p>Next Import: <?= IE_Cron::get_next_scheduled() ?></p>
 <h4>Logs</h4>
 <ul style="max-height: 500px; overflow: auto">
     <?php foreach( IE_LOG::read() as $line ): ?>

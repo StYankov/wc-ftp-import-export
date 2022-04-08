@@ -24,6 +24,17 @@ class IE_LOG {
         return $limit !== -1 ? array_slice( $lines, 0, $limit ) : $lines; 
     }
 
+    // If Log file has more than 100 lines, trim the rest starting from the top (beginning)
+    public static function trim_log_file() {
+        $lines = self::read(-1);
+        $count = count($lines);
+        
+        if($count > 100)
+            $lines = array_slice($lines, $count - 100);
+
+        file_put_contents(self::log_path(), implode( "\n", $lines ));
+    }
+
     private static function log_exists() {
         return file_exists( self::log_path() );
     }
