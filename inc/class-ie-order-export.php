@@ -32,13 +32,22 @@ class IE_Order_Export {
                 'CUSTOMER' => self::get_customer_data( $order ),
                 'SHIPPING' => self::get_shipping_data( $order ),
                 'PAYMENT'  => self::get_payment_data( $order ),
-                'PRODUCTS' => self::get_products_data( $order ),
                 'TOTALS'   => self::get_totals_data( $order )
             ]
         ];
 
         $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><ORDER/>');
         self::to_xml( $xml, $order_data );
+
+        $products = self::get_products_data( $order );
+        // We have to add products separately because we cannot have duplicate keys in PHP arrays
+        foreach($products as $product) {
+            $head = $xml->xpath('//HEAD')[0];
+            $p = $head->addChild('PRODUCTS');
+
+            foreach( $product as $key => $value )
+                $p->addChild($key, $value);
+        }
 
         $ftp = new IE_FTP(
             IE_Settings::get_setting('ie_ftp_host_export'),
@@ -51,7 +60,7 @@ class IE_Order_Export {
         $ftp->upload(
             IE_Settings::get_setting('ie_ftp_path_export'),
             $xml->asXML(),
-            $order->get_id() . '.xml'
+            'order-' . $order->get_id() . '.xml'
         );
 
         $ftp->close();
@@ -86,21 +95,21 @@ class IE_Order_Export {
     private static function get_products_data( WC_Order $order ) { 
         $products = [];
 
+        $index = 1;
         foreach( $order->get_items() as $i => $item ) {
             if( ! is_a( $item, 'WC_Order_Item_Product' ) )
                 continue;
 
-            return [
-                'POSITIONNUMBER'  => $i,
-                'PRODUCT'         => $item->get_name(),
+            $products[] = [
+                'POSITIONNUMBER'  => $index++,
+                'PRODUCT'         => $item->get_id(),
                 'ORDEREDQUANTITY' => $item->get_quantity(),
-                'OPTIONS'         => '', // ?
+                'OPTIONS'         => 0, // ?
                 'PRICE'           => $item->get_total()
             ];
         }
 
-        return '';
-        // return $products;
+        return $products;
     }
 
     private static function get_totals_data( WC_Order $order ) {

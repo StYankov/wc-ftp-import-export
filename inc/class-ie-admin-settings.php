@@ -153,10 +153,8 @@ class IE_Settings {
     }
 
     public function resetCronOnUpdate() {
-        $cron_interval = IE_Settings::get_setting( 'ie_cron_interval' );
-
-        IE_Cron::unschedule();
-        IE_Cron::schedule( $cron_interval );
+        IE_Cron::unschedule( IE_Cron::FTP_DOWNLOAD_HOOK );
+        IE_Cron::schedule();
     }
 }
 
