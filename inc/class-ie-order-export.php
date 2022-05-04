@@ -52,7 +52,8 @@ class IE_Order_Export {
         $ftp = new IE_FTP(
             IE_Settings::get_setting('ie_ftp_host_export'),
             IE_Settings::get_setting('ie_ftp_host_user'),
-            IE_Settings::get_setting('ie_ftp_host_password')
+            IE_Settings::get_setting('ie_ftp_host_password'),
+            IE_Settings::get_setting('ie_ftp_host_port')
         );
 
         $ftp->connect();
