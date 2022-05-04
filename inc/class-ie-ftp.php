@@ -23,6 +23,8 @@ class IE_FTP {
 
             if(!$logged_in)
                 $this->connection = null;
+            else 
+                ftp_pasv($this->connection, true);
         }
     }
 

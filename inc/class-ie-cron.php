@@ -46,9 +46,11 @@ class IE_Cron {
             return;
         }
 
-        $ftp->download( IE_Settings::get_setting('ie_ftp_file_path') );
+        $downloaded = $ftp->download( IE_Settings::get_setting('ie_ftp_file_path') );
 
-        IE_LOG::write('XML File Downloaded', 'success');
+        if( $downloaded )
+            IE_LOG::write('XML File Downloaded', 'success');
+        else IE_LOG::write('XML File not found', 'error');
 
         $ftp->close();
 
