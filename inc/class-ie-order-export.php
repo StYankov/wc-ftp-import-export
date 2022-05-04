@@ -102,7 +102,7 @@ class IE_Order_Export {
 
             $products[] = [
                 'POSITIONNUMBER'  => $index++,
-                'PRODUCT'         => $item->get_id(),
+                'PRODUCT'         => $item->get_product()->get_sku(),
                 'ORDEREDQUANTITY' => $item->get_quantity(),
                 'OPTIONS'         => 0, // ?
                 'PRICE'           => $item->get_total()
