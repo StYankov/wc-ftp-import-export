@@ -81,7 +81,12 @@ class IE_Order_Export {
     private static function get_shipping_data( WC_Order $order ) {
         return [
             'PRICE'    => $order->get_shipping_total(),
-            'ADDRESS'  => $order->get_formatted_billing_address(),
+            'ADDRESS'  => [
+                'COUNTRY'  => WC()->countries->countries[$order->get_billing_country()],
+                'POSTCODE' => $order->get_billing_postcode(),
+                'TOWN'     => $order->get_billing_city(),
+                'STREET'   => $order->get_billing_address_1() 
+            ],
             'PROVIDER' => $order->get_shipping_method()
         ];
     }
